@@ -77,27 +77,13 @@
                   <label for="attempt">Word:</label>
                   <input id="attempt" name="attempt" type="text" width="15"
                      autocomplete="off"  autofocus />
-                  <!-- <input type="submit" name="try" /> -->
                </form>
             </div>
          </div>
          <br />
-         <!-- {% if session.matches|length is not equalto 0  %} -->
          <h2> You found </h2>
-         <p id="results">
-            <!-- {% for match in session.matches %}
-            {{ match }}
-            {% endfor %} -->
-         </p>
-         <!-- {% endif %} -->
-         <!-- {% with messages = get_flashed_messages() %}
-         {% if messages %} -->
-         <!-- Mismatch, already found, etc. "flashed" from Python -->
-         <!-- {% for message in messages %} -->
-         <p class="message">{{ message }}</p>
-         <!-- {% endfor %}
-         {% endif %}
-         {% endwith %} -->
+         <p id="results"></p>
+         <p class="message"></p>
          <script>
             // Prevent default form submission for entry
             $("#entry").submit( function (event) {
@@ -110,17 +96,23 @@
 
                $.getJSON("/_AJAXcheck", { text : txt },
                   function (data) {
-                     rsval = data.result.matches;
-                     console.log("rsval: " + rsval);
-                     if (rsval) {
+                     rslt_matches = data.result.matches;
+                     rslt_message = data.result.message;
+
+                     console.log("matches: " + rslt_matches);
+                     console.log("message: " + rslt_message);
+
+                     if (rslt_matches) {
                         var matches = ""
-                        for (let word in rsval) {
-                           word = rsval[word];
+                        for (let word in rslt_matches) {
+                           word = rslt_matches[word];
                            matches += (word + " ");
                         }
                         console.log(matches);
                         $("#results").html(matches);
                      };
+
+                     $(".message").html(rslt_message);
                   });
             });
          </script>

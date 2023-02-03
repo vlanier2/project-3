@@ -95,6 +95,7 @@ def AJAXcheck():
     text = flask.request.args.get("text", type=str)
     jumble = flask.session["jumble"]
     matches = flask.session.get("matches", [])
+    message = ""
 
     app.logger.debug(f"text:{text} matches:{matches}")
 
@@ -105,11 +106,22 @@ def AJAXcheck():
         matches.append(text)
         flask.session["matches"] = matches
 
-    if len(matches) >= flask.session["target_count"]:
-        return flask.redirect(flask.url_for("success"))
+        if len(matches) >= flask.session["target_count"]:
+            app.logger.debug(f"TARGET HIT {flask.session['target_count']}")
+            return flask.redirect(flask.url_for("success"))
+
+    elif text in matches:
+        message = f"You already found {text}"
+    elif not matched and len(text) > 0:
+        message = f"{text} isn't in the list of words"
+    elif not in_jumble:
+        message = f"{text} can\'t be made from the letters {jumble}"
     
-    else:
-        return flask.jsonify(result = {"matches" : matches})
+    result = {
+        "matches" : matches,
+        "message" : message
+    }
+    return flask.jsonify(result = result)
 
 
 # @app.route("/_check", methods=["POST"])
