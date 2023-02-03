@@ -73,31 +73,57 @@
          <br />
          <div class="row">
             <div class="col-xs-6 text-center">
-               <form id="entry" method="POST" action="/_check">
+               <form id="entry" action="/_AJAXcheck">
                   <label for="attempt">Word:</label>
                   <input id="attempt" name="attempt" type="text" width="15"
                      autocomplete="off"  autofocus />
-                  <input type="submit" name="try" />
+                  <!-- <input type="submit" name="try" /> -->
                </form>
             </div>
          </div>
          <br />
-         {% if session.matches|length is not equalto 0  %}
-         <h2>You found </h2>
+         <!-- {% if session.matches|length is not equalto 0  %} -->
+         <h2> You found </h2>
          <p id="results">
-            {% for match in session.matches %}
+            <!-- {% for match in session.matches %}
             {{ match }}
-            {% endfor %}
+            {% endfor %} -->
          </p>
-         {% endif %}
-         {% with messages = get_flashed_messages() %}
-         {% if messages %}
+         <!-- {% endif %} -->
+         <!-- {% with messages = get_flashed_messages() %}
+         {% if messages %} -->
          <!-- Mismatch, already found, etc. "flashed" from Python -->
-         {% for message in messages %}
+         <!-- {% for message in messages %} -->
          <p class="message">{{ message }}</p>
-         {% endfor %}
+         <!-- {% endfor %}
          {% endif %}
-         {% endwith %}
+         {% endwith %} -->
+         <script>
+            // Prevent default form submission for entry
+            $("#entry").submit( function (event) {
+               event.preventDefault();
+            });
+
+            // 
+            $("#attempt").keyup(function (event) {
+               var txt = $("#attempt").val();
+
+               $.getJSON("/_AJAXcheck", { text : txt },
+                  function (data) {
+                     rsval = data.result.matches;
+                     console.log("rsval: " + rsval);
+                     if (rsval) {
+                        var matches = ""
+                        for (let word in rsval) {
+                           word = rsval[word];
+                           matches += (word + " ");
+                        }
+                        console.log(matches);
+                        $("#results").html(matches);
+                     };
+                  });
+            });
+         </script>
       </div>
       <!-- container -->
    </body>
