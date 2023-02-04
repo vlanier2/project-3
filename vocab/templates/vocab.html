@@ -81,7 +81,7 @@
             </div>
          </div>
          <br />
-         <h2> You found </h2>
+         <h2></h2>
          <p id="results"></p>
          <p class="message"></p>
          <script>
@@ -90,25 +90,39 @@
                event.preventDefault();
             });
 
-            // 
+            // check keyup
             $("#attempt").keyup(function (event) {
                var txt = $("#attempt").val();
+               var keycode = event.which;
+               var letter = String.fromCharCode(keycode);
+               if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return };
 
                $.getJSON("/_AJAXcheck", { text : txt },
                   function (data) {
+
+                     rslt_redirect = data.result.redirect;
                      rslt_matches = data.result.matches;
                      rslt_message = data.result.message;
 
-                     console.log("matches: " + rslt_matches);
-                     console.log("message: " + rslt_message);
+                     // redirect to success page triggered
+                     if (rslt_redirect) {
+                        window.location = data.result.redirect;
+                        return
+                     }
 
+                     // ready to show matches so far
                      if (rslt_matches) {
                         var matches = ""
                         for (let word in rslt_matches) {
                            word = rslt_matches[word];
                            matches += (word + " ");
                         }
-                        console.log(matches);
+                        
+                        // show 'found' on first match
+                        if (matches !== "") {
+                           $("h2").html("You found:")
+                        }
+
                         $("#results").html(matches);
                      };
 

@@ -57,26 +57,13 @@ def index():
     app.logger.debug("At least one seems to be set correctly")
     return flask.render_template('vocab.html')
 
-
-# @app.route("/keep_going")
-# def keep_going():
-#     """
-#     After initial use of index, we keep the same scrambled
-#     word and try to get more matches
-#     """
-#     flask.g.vocab = WORDS.as_list()
-#     return flask.render_template('vocab.html')
-
-
-# @app.route("/success")
-# def success():
-#     return flask.render_template('success.html')
-
+@app.route("/success")
+def success():
+    app.logger.debug("success endpoint")
+    return flask.render_template('success.html'), 200
 
 #######################
-# Form handler.
-#   You'll need to change this to a
-#   a JSON request handler
+#  JSON request handler
 #######################
 
 @app.route("/_AJAXcheck")
@@ -96,6 +83,7 @@ def AJAXcheck():
     jumble = flask.session["jumble"]
     matches = flask.session.get("matches", [])
     message = ""
+    result = {}
 
     app.logger.debug(f"text:{text} matches:{matches}")
 
@@ -105,83 +93,23 @@ def AJAXcheck():
     if matched and in_jumble and not (text in matches):
         matches.append(text)
         flask.session["matches"] = matches
-
-        if len(matches) >= flask.session["target_count"]:
-            app.logger.debug(f"TARGET HIT {flask.session['target_count']}")
-            return flask.redirect(flask.url_for("success"))
-
     elif text in matches:
         message = f"You already found {text}"
     elif not matched and len(text) > 0:
         message = f"{text} isn't in the list of words"
     elif not in_jumble:
         message = f"{text} can\'t be made from the letters {jumble}"
-    
-    result = {
-        "matches" : matches,
-        "message" : message
-    }
+
+    if len(matches) >= flask.session["target_count"]:
+        app.logger.debug(f"TARGET HIT {flask.session['target_count']}")
+        result["redirect"] = flask.url_for("success")
+    else:
+        result["redirect"] = False
+
+    result["matches"] = matches
+    result["message"] = message
+
     return flask.jsonify(result = result)
-
-
-# @app.route("/_check", methods=["POST"])
-# def check():
-#     """
-#     User has submitted the form with a word ('attempt')
-#     that should be formed from the jumble and on the
-#     vocabulary list.  We respond depending on whether
-#     the word is on the vocab list (therefore correctly spelled),
-#     made only from the jumble letters, and not a word they
-#     already found.
-#     """
-#     app.logger.debug("Entering check")
-
-#     # The data we need, from form and from cookie
-#     text = flask.request.form["attempt"]
-#     jumble = flask.session["jumble"]
-#     matches = flask.session.get("matches", [])  # Default to empty list
-
-#     # Is it good?
-#     in_jumble = LetterBag(jumble).contains(text)
-#     matched = WORDS.has(text)
-
-#     # Respond appropriately
-#     if matched and in_jumble and not (text in matches):
-#         # Cool, they found a new word
-#         matches.append(text)
-#         flask.session["matches"] = matches
-#     elif text in matches:
-#         flask.flash("You already found {}".format(text))
-#     elif not matched:
-#         flask.flash("{} isn't in the list of words".format(text))
-#     elif not in_jumble:
-#         flask.flash(
-#             '"{}" can\'t be made from the letters {}'.format(text, jumble))
-#     else:
-#         app.logger.debug("This case shouldn't happen!")
-#         assert False  # Raises AssertionError
-
-#     # Choose page:  Solved enough, or keep going?
-#     if len(matches) >= flask.session["target_count"]:
-#        return flask.redirect(flask.url_for("success"))
-#     else:
-#        return flask.redirect(flask.url_for("keep_going"))
-
-
-###############
-# AJAX request handlers
-#   These return JSON, rather than rendering pages.
-###############
-
-@app.route("/_example")
-def example():
-    """
-    Example ajax request handler
-    """
-    app.logger.debug("Got a JSON request")
-    rslt = {"key": "value"}
-    return flask.jsonify(result=rslt)
-
 
 #################
 # Functions used within the templates
@@ -198,7 +126,6 @@ def format_filt(something):
 ###################
 #   Error handlers
 ###################
-
 
 @app.errorhandler(404)
 def error_404(e):
@@ -217,7 +144,6 @@ def error_500(e):
 def error_403(e):
     app.logger.warning("++ 403 error: {}".format(e))
     return flask.render_template('403.html'), 403
-
 
 #############
 
