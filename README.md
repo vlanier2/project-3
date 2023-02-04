@@ -1,64 +1,58 @@
 # UOCIS322 - Project 3 #
 
-You'll learn about JQuery and asynchronous requests in this project.
+NAME: Vincent Lanier
 
-## Overview
+CONTACT: vlanier@uoregon.edu
+
+## Project Description
 
 The program is a simple anagram game designed for English-learning students in elementary and middle school. It presents a list of words to students and an anagram. The anagram is a jumble of some of the words, which are randomly chosen. Students attempt to type words that can be created from the jumble. When a matching word is typed, it is added to a list of solved words.
 
 The vocabulary word list is fixed for one invocation of the server, so multiple students connected to the same server will see the same vocabulary list but may have different anagrams.
 
-## Getting started
+The frontend is built with AJAX and JQuery with a Flask backend.
 
-`flask_vocab.py` runs the anagram game, with the template `vocab.html`. This example uses a conventional interaction through a form, interacting only when the user submits the form. The vocabulary and anagram are currently loaded using basic JINJA. What you're supposed to do is to change the form interaction into an AJAX interaction (using JQuery).
+## Setup
 
-## Tasks
+### Supplying a Credentials File
 
-* Familiarize yourself with `flask_vocab.py` and `flask_minijax.py` by running them separately. You need to understand them to do this project.
+credentials-skel.ini should be replaced by a credentials.ini file specifying the port and debug mode. If no credentials file is provided, it defaults to port 5000 and debug=True. *Note: The credentials.ini file should be placed in the /vocab directory so it can be accessed within the container.
 
-* Your task is to replace the form interaction (in `flask_vocab.py`) with AJAX interaction on each keystroke using `flask_minijax.py`. 
+credentials.ini should also provide three additional variables related to the anagram game.
 
-  **NOTE:** You MUST remove the submit button, check for validity per keystroke, and redirect to the success page as soon as the required number of words are found.
+"secret_key" - should be replaced by a random string
 
-* As always, revise the README file, and add your info to `Dockerfile`. These have points!
+"success_at_count" - decides how many words must be guessed to win the game
 
-* As always, submit your `credentials.ini` through Canvas. It should contain your name and git repo URL.
+"vocab" - path to the vocab list used in the game. Three vocab lists are provided in /data and any custom vocab list can be used in this format
 
-## FAQ
-### What is `src`?
-This is a sub-package which contains modules related to the game. You should not make any changes there, but feel free to review them to get a better understanding.
+### Building a Container
 
-### What is `data`?
-This directory contains a few word lists in the form of text files. You should not make any changes to the ones that already exist. However, you can add your own (but don't have to). You can change the word list file in your `credentials.ini`.
+Move to /vocab and build the simple flask app image using
 
-### What is minijax?
+```
+docker build -t <some-image-name> .
+```
 
-`flask_minijax.py`, along with its template `templates/minijax.html`, is a tiny example of using JQuery with flask for an AJAX application. They should not be included in the version of the project you turn in. You can use this example to figure out how to implement an AJAX version of the game. Delete the two (along with `static/img`) when you're done with the project.
+Run the container using
 
-### How do I run the tests?
-The `tests` directory contains a test suite for the `src` package. There's a `run_tests.sh`, which you can run in your container while it's running. However, it is not required, since you will not be changing anything in `src`.
+```
+docker run -d -p desired-port:5000 some-image-name
+```
 
-## Grading Rubric
+## Anagram Game
 
-* If your code works as expected: 100 points. This includes:
-	* AJAX in the frontend (`vocab.html`)
-	* Logic in the backend (`flask_vocab.py`)
-	* Frontend to backend interaction (with correct requests and responses) between `vocab.html` and `flask_vocab.py`.
-	* Basically the webpage should handle validation WITHOUT any refreshes.
-* If the game isn't fully functional as described, **40 point** will be docked.
+Use the letters provided in bold to determine which of the words shown make up the anagram. When you have a guess, type in the field labeled word. 
+The page will dynamically update and let you know one of three cases: 
 
-* If messages are not displayed correctly in the webpage, 30 points will be docked. Expected behavior is notifying whether (a) the word typed is not in the vocabulary, or (b) the word cannot be made from the anagram; and in the case of a match, the word should be written somewhere along with the rest of the matched words.
+1) The typed characters are not in the list of words
 
-* If none of the functionalities work, 30 will be assigned assuming
-    * `credentials.ini` is submitted with the correct URL of your repo,
-    * `Dockerfile` builds without any errors, and an instance runs without crashing.
-    * `Dockerfile` and `README` are updated with your name and email.
+2) The typed word can't be made from the letters in the anagram
 
-* If the `Dockerfile` doesn't run, build or is missing, 5 will be assigned.
+3) You already found the word
 
-* If `credentials.ini` is not submitted or the repo is not found, 0 will be assigned.
-	 
+Once a word is correctly guessed, it will appear on screen under "You found". Once the required number of words are guessed you are redirected to a success page and given the option to return and start again.
 
-## Authors
+## Shutting Down
 
-Michal Young, Ram Durairajan. Updated by Ali Hassani.
+Simply shut down the flask app with ctrl-c in your terminal, and/or stop the docker container.
